@@ -121,12 +121,12 @@ public class FlinkDoFnFunction<IN, OUT> extends RichMapPartitionFunction<IN, OUT
       return new WindowingInternals<IN, OUT>() {
         @Override
         public StateInternals stateInternals() {
-          return null;
+          throw new RuntimeException("StateInternals are not available yet in batch mode.");
         }
 
         @Override
         public void outputWindowedValue(OUT output, Instant timestamp, Collection<? extends BoundedWindow> windows, PaneInfo pane) {
-
+          throw new RuntimeException("outputting windowed values is not supported at the moment.");
         }
 
         @Override

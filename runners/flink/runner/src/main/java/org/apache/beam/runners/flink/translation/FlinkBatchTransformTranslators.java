@@ -147,7 +147,6 @@ public class FlinkBatchTransformTranslators {
       String name = transform.getName();
       BoundedSource<T> source = transform.getSource();
       PCollection<T> output = context.getOutput(transform);
-      Coder<T> coder = output.getCoder();
 
       TypeInformation<T> typeInformation = context.getTypeInfo(output);
 
