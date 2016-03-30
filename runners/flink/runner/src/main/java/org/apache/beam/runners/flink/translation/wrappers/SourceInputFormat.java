@@ -43,29 +43,30 @@ public class SourceInputFormat<T> implements InputFormat<T, SourceInputSplit<T>>
   private static final Logger LOG = LoggerFactory.getLogger(SourceInputFormat.class);
 
   private final BoundedSource<T> initialSource;
+
   private transient PipelineOptions options;
 
-  private BoundedSource.BoundedReader<T> reader = null;
-  private boolean inputAvailable = true;
+  private transient BoundedSource.BoundedReader<T> reader;
+  private boolean inputAvailable;
+
+  final ObjectMapper mapper = new ObjectMapper();
 
   public SourceInputFormat(BoundedSource<T> initialSource, PipelineOptions options) {
     this.initialSource = initialSource;
     this.options = options;
   }
 
-  private void writeObject(ObjectOutputStream out)
-      throws IOException, ClassNotFoundException {
-    out.defaultWriteObject();
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.writeValue(out, options);
-  }
-
-  private void readObject(ObjectInputStream in)
-      throws IOException, ClassNotFoundException {
-    in.defaultReadObject();
-    ObjectMapper mapper = new ObjectMapper();
-    options = mapper.readValue(in, PipelineOptions.class);
-  }
+//  private void writeObject(ObjectOutputStream out)
+//      throws IOException, ClassNotFoundException {
+//    out.defaultWriteObject();
+//    mapper.writeValue(out, options);
+//  }
+//
+//  private void readObject(ObjectInputStream in)
+//      throws IOException, ClassNotFoundException {
+//    in.defaultReadObject();
+//    options = mapper.readValue(in, PipelineOptions.class);
+//  }
 
   @Override
   public void configure(Configuration configuration) {}
