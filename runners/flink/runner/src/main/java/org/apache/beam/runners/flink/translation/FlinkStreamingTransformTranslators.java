@@ -209,12 +209,12 @@ public class FlinkStreamingTransformTranslators {
 
       DataStream<WindowedValue<T>> inputDataSet = context.getInputDataStream(input);
 
-      inputDataSet.flatMap(new FlatMapFunction<WindowedValue<T>, String>() {
+      inputDataSet.flatMap(new FlatMapFunction<WindowedValue<T>, Object>() {
         @Override
-        public void flatMap(WindowedValue<T> value, Collector<String> out) throws Exception {
-          out.collect(value.getValue().toString());
+        public void flatMap(WindowedValue<T> value, Collector<Object> out) throws Exception {
+          out.collect(value.getValue());
         }
-      }).addSink(((UnboundedFlinkSink<String>) sink).getFlinkSource()).name(name);
+      }).addSink(((UnboundedFlinkSink<Object>) sink).getFlinkSource()).name(name);
     }
   }
 
