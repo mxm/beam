@@ -18,38 +18,26 @@
 package org.apache.beam.runners.flink.examples.streaming;
 
 import org.apache.beam.runners.flink.FlinkPipelineRunner;
-import org.apache.beam.runners.flink.translation.wrappers.streaming.io.UnboundedFlinkSink;
 import org.apache.beam.runners.flink.translation.wrappers.streaming.io.UnboundedFlinkSource;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.Read;
-import org.apache.beam.sdk.io.Write;
+import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.options.Default;
 import org.apache.beam.sdk.options.Description;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
-import org.apache.beam.sdk.transforms.Aggregator;
-import org.apache.beam.sdk.transforms.Count;
-import org.apache.beam.sdk.transforms.DoFn;
-import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.Sum;
-import org.apache.beam.sdk.transforms.windowing.AfterWatermark;
-import org.apache.beam.sdk.transforms.windowing.FixedWindows;
-import org.apache.beam.sdk.transforms.windowing.Window;
+import org.apache.beam.sdk.transforms.*;
+import org.apache.beam.sdk.transforms.windowing.*;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer08;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer08;
-import org.apache.flink.streaming.util.serialization.SerializationSchema;
 import org.apache.flink.streaming.util.serialization.SimpleStringSchema;
-import org.apache.flink.util.InstantiationUtil;
 import org.joda.time.Duration;
 
-import java.io.IOException;
 import java.util.Properties;
 
 public class KafkaWindowedWordCountExample {
 
   static final String KAFKA_TOPIC = "test";  // Default kafka topic to read from
-  static final String KAFKA_OUTPUT_TOPIC = "bla";  // Default kafka topic to read from
   static final String KAFKA_BROKER = "localhost:9092";  // Default kafka broker to contact
   static final String GROUP_ID = "myGroup";  // Default groupId
   static final String ZOOKEEPER = "localhost:2181";  // Default zookeeper to connect to for Kafka
@@ -91,12 +79,6 @@ public class KafkaWindowedWordCountExample {
     String getKafkaTopic();
 
     void setKafkaTopic(String value);
-
-    void setKafkaOutputTopic(String value);
-
-    @Description("The Kafka topic to read from")
-    @Default.String(KAFKA_OUTPUT_TOPIC)
-    String getKafkaOutputTopic();
 
     @Description("The Kafka Broker to read from")
     @Default.String(KAFKA_BROKER)
@@ -152,11 +134,8 @@ public class KafkaWindowedWordCountExample {
     PCollection<KV<String, Long>> wordCounts =
         words.apply(Count.<String>perElement());
 
-    FlinkKafkaProducer08<String> kafkaSink =
-        new FlinkKafkaProducer08<>(options.getKafkaOutputTopic(), new SimpleStringSchema(), p);
-
     wordCounts.apply(ParDo.of(new FormatAsStringFn()))
-        .apply(Write.to(UnboundedFlinkSink.of(kafkaSink)));
+        .apply(TextIO.Write.to("./outputKafka.txt"));
 
     pipeline.run();
   }
