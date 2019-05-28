@@ -93,6 +93,7 @@ public class FlinkSavepointTest implements Serializable {
     Configuration config = new Configuration();
     // Avoid port collision in parallel tests
     config.setInteger(RestOptions.PORT, 0);
+    // Change to "rocksdb" and everything will pass
     config.setString(CheckpointingOptions.STATE_BACKEND, "filesystem");
     // It is necessary to configure the checkpoint directory for the state backend,
     // even though we only create savepoints in this test.
@@ -132,7 +133,8 @@ public class FlinkSavepointTest implements Serializable {
     }
   }
 
-  @Test(timeout = 60_000)
+  // Time limit removed for debugging
+  @Test
   public void testSavepointRestoreLegacy() throws Exception {
     runSavepointAndRestore(false);
   }
@@ -145,8 +147,18 @@ public class FlinkSavepointTest implements Serializable {
   private void runSavepointAndRestore(boolean isPortablePipeline) throws Exception {
     FlinkPipelineOptions options = PipelineOptionsFactory.as(FlinkPipelineOptions.class);
     options.setStreaming(true);
-    // savepoint assumes local file system
-    options.setParallelism(1);
+    options.setParallelism(2);
+
+    // Test fails for:
+    // options.setMaxParallelism(128); // default value
+    // options.setMaxParallelism(64);
+    // options.setMaxParallelism(118);
+
+    // Test passes with:
+    // options.setMaxParallelism(110);
+    // options.setMaxParallelism(63);
+    // options.setMaxParallelism(24);
+
     options.setRunner(FlinkRunner.class);
 
     oneShotLatch = new CountDownLatch(1);
@@ -163,6 +175,7 @@ public class FlinkSavepointTest implements Serializable {
     String savepointDir = takeSavepointAndCancelJob(jobID);
 
     oneShotLatch = new CountDownLatch(1);
+    options.setParallelism(4);
     pipeline = Pipeline.create(options);
     createStreamingJob(pipeline, true, isPortablePipeline);
 
