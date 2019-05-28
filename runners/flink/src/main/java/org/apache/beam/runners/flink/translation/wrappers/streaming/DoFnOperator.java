@@ -1065,13 +1065,13 @@ public class DoFnOperator<InputT, OutputT> extends AbstractStreamOperator<Window
      * namespace of the timer and the timer's id. Necessary for supporting removal of existing
      * timers. In Flink removal of timers can only be done by providing id and time of the timer.
      */
-    final MapState<String, TimerData> pendingTimersById;
+//    final MapState<String, TimerData> pendingTimersById;
 
     private FlinkTimerInternals() {
       MapStateDescriptor<String, TimerData> pendingTimersByIdStateDescriptor =
           new MapStateDescriptor<>(
               "pending-timers", new StringSerializer(), new CoderTypeSerializer<>(timerCoder));
-      this.pendingTimersById = getKeyedStateStore().getMapState(pendingTimersByIdStateDescriptor);
+//      this.pendingTimersById = getKeyedStateStore().getMapState(pendingTimersByIdStateDescriptor);
     }
 
     @Override
@@ -1110,19 +1110,19 @@ public class DoFnOperator<InputT, OutputT> extends AbstractStreamOperator<Window
         default:
           throw new UnsupportedOperationException("Unsupported time domain: " + timer.getDomain());
       }
-      pendingTimersById.put(contextTimerId, timer);
+//      pendingTimersById.put(contextTimerId, timer);
     }
 
     private void cancelPendingTimerById(String contextTimerId) throws Exception {
-      TimerData oldTimer = pendingTimersById.get(contextTimerId);
-      if (oldTimer != null) {
-        deleteTimer(oldTimer);
-      }
+//      TimerData oldTimer = pendingTimersById.get(contextTimerId);
+//      if (oldTimer != null) {
+//        deleteTimer(oldTimer);
+//      }
     }
 
     void cleanupPendingTimer(TimerData timer) {
       try {
-        pendingTimersById.remove(getContextTimerId(timer.getTimerId(), timer.getNamespace()));
+//        pendingTimersById.remove(getContextTimerId(timer.getTimerId(), timer.getNamespace()));
       } catch (Exception e) {
         throw new RuntimeException("Failed to cleanup state with pending timers", e);
       }
